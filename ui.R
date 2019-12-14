@@ -130,7 +130,8 @@ shinyUI(fluidPage(theme = shinytheme("superhero"),
                                 )
                             ),
                             mainPanel(
-                                verbatimTextOutput("glmModel")
+                                verbatimTextOutput("glmModel"),
+                                plotOutput("glmPlot")
                                     
                                 )
                         )),

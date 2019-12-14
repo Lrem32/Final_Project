@@ -192,23 +192,24 @@ shinyServer(function(input, output, session) {
     # This will allow the user to choose the interactions to be chosen for our models. 
     chooseInteractions <- reactive({
         interactions <- paste(input$predictorVars, collapse = "+")
-     #   quadratics <- paste(input$predictorVarsQuad, collapse = "+")
-     #   if (quadratics != "" &&  interactions != ""){
-     #        predictors <- paste(paste(input$predictorVars, collapse = "+"), quadratics, sep = "+")
-     #   }else{
-     #       if(interactions != ""){
-     #           predictors <- interactions
-     #       }else{
-     #           if(interactions == "" && quadratics != ""){
-     #               predictors <- paste(input$predictorVarsQuad, collapse = "+")
-      #          }
-      #      }
-      #  }
+        quadratics <- paste(input$predictorVarsQuad, collapse = "+")
+        if (quadratics != "" &&  interactions != ""){
+             predictors <- paste(paste(input$predictorVars, collapse = "+"), quadratics, sep = "+")
+        }else{
+            if(interactions != ""){
+                predictors <- interactions
+            }else{
+                if(interactions == "" && quadratics != ""){
+                    predictors <- paste(input$predictorVarsQuad, collapse = "+")
+                }
+            }
+        }
     })
     
     # Now we can fit our model with the previous reactive function. 
     fitLinearModel <- reactive({
-        fit <- lm(reformulate(chooseInteractions(),input$responseVar), data = crimeTrain)
+        fit <- lm(as.formula(paste(input$responseVar, "~", chooseInteractions())), data = crimeTrain)
+        return(fit)
     })
     output$plot <- renderPlot({
         # Let's bring in the dynamically changing dataset! 
@@ -246,15 +247,12 @@ shinyServer(function(input, output, session) {
     
     # This will output the results from our Linear Regression Model
     output$glmModel <- renderPrint({
-        fit <- lm(crimeTrain[,input$responseVar] ~ crimeTrain[,input$predictorVars])
-        names(fit$coefficients) <- c("Intercept")
-        print(fit)
+        summary(fitLinearModel())
+    })
+    
+    # Plot our model! 
+    output$glmPlot <- renderPlot({
+        abline(lm(as.formula(paste(input$responseVar, "~", chooseInteractions())), data = crimeTrain))
         
-        
-        
-        #responseModel <- input$responseVar
-        #predictorsModel <- chooseInteractions()
-        #fit <- lm(reformulate(predictorsModel,responseModel), data = crimeData, na.exclude = TRUE)
-        #table(summary(fit))
     })
 })
